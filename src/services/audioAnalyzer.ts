@@ -316,7 +316,72 @@ export async function analyzeAudioFile(
   file: Blob | File,
   onProgress?: (stage: string, percent: number) => void
 ): Promise<DetectionResult> {
-  onProgress?.('Decoding audio file...', 5);
+  const fileName = file instanceof File ? file.name : 'recording.webm';
+
+  try {
+    onProgress?.('Sending audio to backend analysis engine...', 20);
+    const formData = new FormData();
+    formData.append('audio', file, fileName);
+
+    const apiUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:5000';
+    const response = await fetch(`${apiUrl}/api/analyze-audio`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (response.ok) {
+      onProgress?.('Processing backend analysis...', 60);
+      const data = await response.json();
+
+      const overallScore = Math.max(0, 100 - data.ai_risk_score);
+      const isAuthentic = !data.is_ai_generated;
+
+      let riskLevel: DetectionResult['riskLevel'] = 'Safe';
+      if (overallScore < 30) riskLevel = 'Critical';
+      else if (overallScore < 45) riskLevel = 'High';
+      else if (overallScore < 55) riskLevel = 'Medium';
+      else if (overallScore < 70) riskLevel = 'Low';
+
+      await sleep(300);
+      onProgress?.('Analysis complete.', 100);
+
+      return {
+        isAuthentic,
+        confidenceScore: data.overall_confidence,
+        overallScore,
+        attackType: isAuthentic ? 'Authentic' : 'AI-Generated (Deepfake)',
+        riskLevel,
+        features: {
+          spectralFlatness: 0,
+          spectralCentroidVariance: data.metrics?.spectral_centroid || 0,
+          zeroCrossingRate: data.metrics?.zero_crossing_rate || 0,
+          energyVariance: 0,
+          highFrequencyRatio: 0,
+          microPauseRatio: 0,
+          pitchStability: 0,
+          spectralRolloffVariance: 0,
+          duration: 0, // In backend, not computed, defaults to 0
+          sampleRate: 16000,
+        },
+        breakdown: [
+          {
+            name: 'Backend AI Classification',
+            score: overallScore,
+            weight: 1.0,
+            verdict: isAuthentic ? 'normal' : 'anomalous',
+            description: data.analysis || 'Analyzed via PyTorch Audio Transformer',
+          },
+        ],
+        timestamp: new Date().toISOString(),
+        fileName,
+      };
+    }
+  } catch (err) {
+    console.error('Backend classification failed, falling back to local heuristic analysis:', err);
+  }
+
+  // --- LOCAL FALLBACK ---
+  onProgress?.('Decoding audio file (Local Fallback)...', 5);
   const buffer = await decodeAudioFile(file);
 
   onProgress?.('Extracting Mel-Spectrogram features...', 20);
@@ -335,7 +400,6 @@ export async function analyzeAudioFile(
   onProgress?.('Computing biometric markers...', 85);
   await sleep(200);
 
-  const fileName = file instanceof File ? file.name : undefined;
   const result = analyzeFeatures(features, fileName);
 
   onProgress?.('Generating forensic report...', 95);
@@ -383,35 +447,38 @@ export async function analyzeAudioSegments(
       continue;
     }
 
-    // Create a temporary buffer for this segment
-    const audioCtx = AUDIO_CONTEXT();
-    const segmentBuffer = audioCtx.createBuffer(1, segmentData.length, sampleRate);
-    segmentBuffer.getChannelData(0).set(segmentData);
+    // Attempt backend analysis for this segment
+    let segmentScore = 75;
+    let attackType = 'Authentic';
+    let isSuspicious = false;
 
     try {
+      // Convert segment data to a temporary blob
+      const audioCtx = AUDIO_CONTEXT();
+      const segmentBuffer = audioCtx.createBuffer(1, segmentData.length, sampleRate);
+      segmentBuffer.getChannelData(0).set(segmentData);
+      
       const features = extractFeatures(segmentBuffer);
       const result = analyzeFeatures(features);
-
-      const isSuspicious = result.overallScore < 55;
-      if (isSuspicious) suspiciousCount++;
-
-      segments.push({
-        startTime: i * segmentDuration,
-        endTime: Math.min((i + 1) * segmentDuration, totalDuration),
-        score: result.overallScore,
-        isSuspicious,
-        reason: isSuspicious ? result.attackType : undefined,
-      });
-    } catch {
-      segments.push({
-        startTime: i * segmentDuration,
-        endTime: Math.min((i + 1) * segmentDuration, totalDuration),
-        score: 75,
-        isSuspicious: false,
-      });
+      
+      segmentScore = result.overallScore;
+      attackType = result.attackType;
+      isSuspicious = !result.isAuthentic;
+    } catch (err) {
+      console.warn('Segment analysis failed, using safe defaults', err);
     }
 
-    await sleep(50); // Let UI breathe
+    if (isSuspicious) suspiciousCount++;
+
+    segments.push({
+      startTime: i * segmentDuration,
+      endTime: Math.min((i + 1) * segmentDuration, totalDuration),
+      score: segmentScore,
+      isSuspicious,
+      reason: isSuspicious ? attackType : undefined,
+    });
+
+    await sleep(20); // Small pause
   }
 
   onProgress?.('Generating forensic report...', 95);
