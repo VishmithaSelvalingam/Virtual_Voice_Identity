@@ -5,7 +5,7 @@ import { analyzeAudioFile, VoiceRecorder, type DetectionResult, type FeatureScor
 import { useAnalysis } from '../context/AnalysisContext';
 
 const AnalyzeVoice = () => {
-    const [activeTab, setActiveTab] = useState<'record' | 'upload'>('record');
+    const [activeTab, setActiveTab] = useState<'record' | 'upload'>('upload');
     const [status, setStatus] = useState<'idle' | 'recording' | 'analyzing' | 'result' | 'error'>('idle');
     const [progress, setProgress] = useState(0);
     const [progressLabel, setProgressLabel] = useState('');
@@ -147,16 +147,16 @@ const AnalyzeVoice = () => {
                     {(status === 'idle' || status === 'error') && (
                         <div className="cyber-card p-1 d-inline-flex mb-4 rounded-3 p-2 bg-black border border-dark">
                             <button
-                                className={`btn btn-sm px-4 rounded-2 fw-semibold ${activeTab === 'record' ? 'bg-dark text-brand shadow-sm border border-secondary' : 'text-muted'}`}
-                                onClick={() => { setActiveTab('record'); setError(null); }}
-                            >
-                                <FaMicrophone className="me-2" />Live Capture
-                            </button>
-                            <button
                                 className={`btn btn-sm px-4 rounded-2 fw-semibold ${activeTab === 'upload' ? 'bg-dark text-brand shadow-sm border border-secondary' : 'text-muted'}`}
                                 onClick={() => { setActiveTab('upload'); setError(null); }}
                             >
                                 <FaUpload className="me-2" />Upload File
+                            </button>
+                            <button
+                                className={`btn btn-sm px-4 rounded-2 fw-semibold ${activeTab === 'record' ? 'bg-dark text-brand shadow-sm border border-secondary' : 'text-muted'}`}
+                                onClick={() => { setActiveTab('record'); setError(null); }}
+                            >
+                                <FaMicrophone className="me-2" />Live Capture
                             </button>
                         </div>
                     )}
@@ -317,18 +317,6 @@ const AnalyzeVoice = () => {
                                             <span className={`badge ${result.riskLevel === 'Safe' ? 'bg-success' : result.riskLevel === 'Low' ? 'bg-info' : result.riskLevel === 'Medium' ? 'bg-warning' : 'bg-danger'}`}>
                                                 {result.riskLevel.toUpperCase()}
                                             </span>
-                                        </div>
-                                    </div>
-                                    <div className="col-6">
-                                        <div className="p-3 rounded bg-dark border border-secondary">
-                                            <span className="text-muted small d-block">Duration</span>
-                                            <span className="text-white font-monospace">{result.features.duration.toFixed(1)}s</span>
-                                        </div>
-                                    </div>
-                                    <div className="col-6">
-                                        <div className="p-3 rounded bg-dark border border-secondary">
-                                            <span className="text-muted small d-block">Sample Rate</span>
-                                            <span className="text-white font-monospace">{(result.features.sampleRate / 1000).toFixed(1)} kHz</span>
                                         </div>
                                     </div>
                                 </div>
