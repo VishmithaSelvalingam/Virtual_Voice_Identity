@@ -1,0 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+    /* Eyeshield-inspired Palette */
+    --bg-dark: #050505;
+    /* Near Black */
+    --bg-card: #111111;
+    /* Dark Grey */
+    --bg-card-hover: #1a1a1a;
+
+    /* The "Eyeshield" Warm Gradient - Orange to Red/Pink */
+    --primary-gradient: linear-gradient(135deg, #FF6B00 0%, #FF3D00 100%);
+    --secondary-gradient: linear-gradient(135deg, #FF3D00 0%, #D32F2F 100%);
+
+    --primary-brand: #FF6B00;
+    /* Bright Orange */
+    --primary-accent: #FF3D00;
+    /* Red-Orange */
+
+    --text-main: #ffffff;
+    --text-secondary: #cbd5e1;
+    /* Slate 300 - Much brighter */
+    --text-muted: #94a3b8;
+    /* Slate 400 - Brighter than before */
+
+    --border-color: #222222;
+    --border-highlight: #333333;
+
+    --font-main: 'Inter', sans-serif;
+    --font-display: 'Plus Jakarta Sans', sans-serif;
+    /* Modern, geometric, bold */
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    overflow-x: hidden;
+    margin: 0;
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+}
+
+/* Typography Utilities */
+.text-brand {
+    color: var(--primary-brand);
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+.text-gradient {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Cards - Deep Dark & Clean */
+.cyber-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cyber-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-highlight);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* Buttons - Warm Gradients */
+.btn-primary,
+.cyber-button {
+    background: var(--primary-gradient) !important;
+    border: none !important;
+    color: white !important;
+    font-family: var(--font-display);
+    font-weight: 600;
+    padding: 0.75rem 1.75rem;
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
+}
+
+.btn-primary:hover,
+.cyber-button:hover {
+    background: var(--secondary-gradient) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 61, 0, 0.4);
+}
+
+.btn-outline-light {
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-main);
+    font-family: var(--font-display);
+    font-weight: 600;
+    padding: 0.75rem 1.75rem;
+    border-radius: var(--radius-sm);
+}
+
+.btn-outline-light:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--text-main);
+}
+
+/* Form Elements */
+.cyber-input {
+    background: #0f0f0f;
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    width: 100%;
+    font-family: var(--font-main);
+}
+
+.cyber-input:focus {
+    border-color: var(--primary-brand);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.15);
+}
+
+/* Navbar overrides */
+.navbar {
+    border-bottom: 1px solid var(--border-color) !important;
+    background: rgba(5, 5, 5, 0.8) !important;
+    backdrop-filter: blur(12px);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: #e2e8f0 !important;
+    /* Brighter default text */
+    transition: color 0.2s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--primary-brand) !important;
+}
+
+/* Custom Utilities */
+.bg-brand-soft {
+    background: rgba(255, 107, 0, 0.1);
+}
+
+.border-brand-soft {
+    border-color: rgba(255, 107, 0, 0.2) !important;
+}
+
+/* Badge overrides */
+.badge {
+    padding: 0.5em 0.8em;
+    border-radius: 6px;
+    font-family: var(--font-display);
+}
